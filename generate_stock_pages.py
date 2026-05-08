@@ -318,7 +318,11 @@ def llm_analysis(stock_name: str, ticker_id: str, news: list, revenue: list) -> 
         req = urllib.request.Request(
             GROQ_URL,
             data=json.dumps(body).encode(),
-            headers={'Authorization': f'Bearer {GROQ_KEY}', 'Content-Type': 'application/json'},
+            headers={
+                'Authorization': f'Bearer {GROQ_KEY}',
+                'Content-Type': 'application/json',
+                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            },
         )
         resp = json.loads(urllib.request.urlopen(req, timeout=30).read())
         return resp['choices'][0]['message']['content'].strip()
