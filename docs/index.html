@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Algo Trading Reports</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","SF Pro Text",sans-serif;background:#0d1117;color:#e6edf3;line-height:1.55;padding:20px;max-width:1400px;margin:0 auto}
+h1{font-size:24px;font-weight:600;border-bottom:1px solid #30363d;padding-bottom:10px;margin-bottom:16px}
+h2{font-size:18px;margin:28px 0 12px;color:#58a6ff;border-left:3px solid #58a6ff;padding-left:10px}
+h3{font-size:15px;margin:18px 0 8px;color:#c9d1d9}
+nav{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:13px}
+nav a{color:#58a6ff;margin-right:14px;text-decoration:none}
+nav a:hover{text-decoration:underline}
+table{border-collapse:collapse;font-size:12px;margin:8px 0;background:#161b22;width:100%}
+th{background:#21262d;color:#c9d1d9;padding:6px 8px;text-align:right;border:1px solid #30363d;cursor:pointer;user-select:none;font-weight:600;position:sticky;top:0}
+th:first-child,td:first-child{text-align:left}
+th:hover{background:#2d333b}
+td{padding:5px 8px;border:1px solid #30363d;text-align:right;font-variant-numeric:tabular-nums}
+tr:hover td{background:#1c2128}
+.pos{color:#3fb950}
+.neg{color:#f85149}
+.mute{color:#6e7681}
+.tag{display:inline-block;padding:2px 6px;border-radius:3px;background:#21262d;font-size:11px}
+.section-info{color:#8b949e;font-size:12px;margin-bottom:8px}
+details{background:#161b22;border:1px solid #30363d;border-radius:6px;padding:8px 12px;margin:8px 0}
+details summary{cursor:pointer;font-weight:600;font-size:14px}
+.metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin:8px 0}
+.metric{background:#161b22;border:1px solid #30363d;border-radius:6px;padding:10px;font-size:12px}
+.metric .v{font-size:18px;font-weight:600;color:#58a6ff;display:block;margin-top:2px}
+.heatmap td{position:relative}
+.legend{font-size:11px;color:#8b949e;margin-top:4px}
+</style>
+<script>
+function sortTable(table,col,asc){
+  const rows=Array.from(table.querySelectorAll('tbody tr'));
+  rows.sort((a,b)=>{
+    let av=a.cells[col].getAttribute('data-sort')||a.cells[col].textContent;
+    let bv=b.cells[col].getAttribute('data-sort')||b.cells[col].textContent;
+    const an=parseFloat(av),bn=parseFloat(bv);
+    if(!isNaN(an)&&!isNaN(bn))return asc?an-bn:bn-an;
+    return asc?av.localeCompare(bv):bv.localeCompare(av);
+  });
+  const tb=table.querySelector('tbody');rows.forEach(r=>tb.appendChild(r));
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  document.querySelectorAll('table.sortable').forEach(t=>{
+    t.querySelectorAll('th').forEach((th,i)=>{
+      let asc=true;
+      th.addEventListener('click',()=>{sortTable(t,i,asc);asc=!asc;});
+    });
+  });
+});
+</script>
+</head><body>
+<nav><a href="index.html">📊 首頁</a><a href="cross_period.html">🌍 跨週期</a><a href="detail.html">🔬 細部分析</a><a href="recommendations.html">⭐ 投資建議</a></nav>
+
+<h1>📊 台股電子股策略回測報告</h1>
+<div class="metric-grid">
+<div class="metric">總 ticker 數<span class="v">459</span></div>
+<div class="metric">資料筆數<span class="v">18,403</span></div>
+<div class="metric">策略 (packs)<span class="v">7</span></div>
+<div class="metric">時段<span class="v">總 + 5 段</span></div>
+<div class="metric">推薦標的<span class="v">30</span></div>
+</div>
+<h2>報告導覽</h2>
+<ul style="padding-left:24px;line-height:2">
+<li><a href="cross_period.html" style="color:#58a6ff">🌍 跨週期分析</a> — 各段 Top 30 + 產業適配度</li>
+<li><a href="detail.html" style="color:#58a6ff">🔬 細部分析</a> — Pack 摘要 + Sharpe&gt;1 + alpha&gt;0 清單</li>
+<li><a href="recommendations.html" style="color:#58a6ff">⭐ 投資建議</a> — 目前適合投入 Top 30</li>
+<li><a href="per_ticker/" style="color:#58a6ff">📂 個股 markdown</a> — 449 檔詳細表現</li>
+</ul>
+<h2>資料說明</h2>
+<table><thead><tr><th>項目</th><th>內容</th></tr></thead><tbody>
+<tr><td>Universe</td><td>TWSE 上市電子股 540 檔（FinMind API）</td></tr>
+<tr><td>資料期間</td><td>2016-05-07 ~ 至今（10 年）</td></tr>
+<tr><td>5 個歷史段</td><td>S1 川普1.0+貿易戰 / S2 末段牛市 / S3 COVID+QE / S4 升息熊市 / S5 AI+川普2.0</td></tr>
+<tr><td>策略 packs</td><td>A 趨勢嚴格 / B 趨勢早入 / C 趨勢+大盤filter / D 純 KD/RSI / E 拉回買 / F RSI 超賣 / G DCA</td></tr>
+<tr><td>資料源</td><td>yfinance (本地 parquet cache)</td></tr>
+</tbody></table>
+</body></html>

@@ -1,0 +1,8 @@
+.venv/
+data/
+*.parquet
+electronics_*.partial.*.csv
+__pycache__/
+*.pyc
+.DS_Store
+/tmp/
