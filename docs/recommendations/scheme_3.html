@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>方案 3 Regime Adaptive</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","SF Pro Text",sans-serif;background:#0d1117;color:#e6edf3;line-height:1.55;padding:20px;max-width:1400px;margin:0 auto}
+h1{font-size:24px;font-weight:600;border-bottom:1px solid #30363d;padding-bottom:10px;margin-bottom:16px}
+h2{font-size:18px;margin:28px 0 12px;color:#58a6ff;border-left:3px solid #58a6ff;padding-left:10px}
+h3{font-size:15px;margin:18px 0 8px;color:#c9d1d9}
+nav{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:13px}
+nav a{color:#58a6ff;margin-right:14px;text-decoration:none}
+nav a:hover{text-decoration:underline}
+table{border-collapse:collapse;font-size:12px;margin:8px 0;background:#161b22;width:100%}
+th{background:#21262d;color:#c9d1d9;padding:6px 8px;text-align:right;border:1px solid #30363d;cursor:pointer;user-select:none;font-weight:600;position:sticky;top:0}
+th:first-child,td:first-child{text-align:left}
+th:hover{background:#2d333b}
+td{padding:5px 8px;border:1px solid #30363d;text-align:right;font-variant-numeric:tabular-nums}
+tr:hover td{background:#1c2128}
+.pos{color:#3fb950}
+.neg{color:#f85149}
+.mute{color:#6e7681}
+.tag{display:inline-block;padding:2px 6px;border-radius:3px;background:#21262d;font-size:11px}
+.section-info{color:#8b949e;font-size:12px;margin-bottom:8px}
+.metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin:8px 0}
+.metric{background:#161b22;border:1px solid #30363d;border-radius:6px;padding:10px;font-size:12px}
+.metric .v{font-size:16px;font-weight:600;color:#58a6ff;display:block;margin-top:2px}
+.scheme-badge{display:inline-block;padding:2px 8px;border-radius:4px;color:#fff;font-weight:600;font-size:11px;margin-right:4px}
+.s1{background:#c2530b}.s2{background:#1f6feb}.s3{background:#3fb950}.s4{background:#a371f7}
+.news-item{padding:6px 0;border-bottom:1px dashed #30363d;font-size:13px}
+.news-item a{color:#c9d1d9;text-decoration:none}
+.news-item a:hover{color:#58a6ff;text-decoration:underline}
+.news-date{color:#6e7681;font-size:11px;margin-left:8px}
+.llm-block{background:#161b22;border:1px solid #30363d;border-left:3px solid #d29922;border-radius:6px;padding:12px;font-size:13px;white-space:pre-wrap;line-height:1.7}
+</style>
+<script>
+function sortTable(table,col,asc){
+  const rows=Array.from(table.querySelectorAll('tbody tr'));
+  rows.sort((a,b)=>{
+    let av=a.cells[col].getAttribute('data-sort')||a.cells[col].textContent;
+    let bv=b.cells[col].getAttribute('data-sort')||b.cells[col].textContent;
+    const an=parseFloat(av),bn=parseFloat(bv);
+    if(!isNaN(an)&&!isNaN(bn))return asc?an-bn:bn-an;
+    return asc?av.localeCompare(bv):bv.localeCompare(av);
+  });
+  const tb=table.querySelector('tbody');rows.forEach(r=>tb.appendChild(r));
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  document.querySelectorAll('table.sortable').forEach(t=>{
+    t.querySelectorAll('th').forEach((th,i)=>{
+      let asc=true;
+      th.addEventListener('click',()=>{sortTable(t,i,asc);asc=!asc;});
+    });
+  });
+});
+</script>
+</head><body>
+<nav><a href="/taiwan-stock-backtest/">📊 首頁</a><a href="/taiwan-stock-backtest/cross_period.html">🌍 跨週期</a><a href="/taiwan-stock-backtest/detail.html">🔬 細部</a><a href="/taiwan-stock-backtest/recommendations.html">⭐ 舊版建議</a><a href="/taiwan-stock-backtest/recommendations/">🎯 4 方案</a></nav>
+
+<h1>🎯 方案 3：Regime Adaptive</h1>
+<div class="section-info"><b>Regime Adaptive</b>：S5 策略 > 20% + S4 策略 ≥ 0% + DD < 30% + Pack ≠ G + trades ≥ 5。<br>分數 = S5_strat×0.4 + S4_strat×0.2 + Sharpe×25 + (1-DD/50)×15。<br><b>適合</b>：相信市場 regime 切換，要求能適應升息+多頭兩種環境。<br><b>風險</b>：篩選嚴格，可能股池太小。</div>
+<table class="sortable"><thead><tr>
+<th>#</th>
+<th>Ticker</th>
+<th>名稱</th>
+<th>產業</th>
+<th>建議 Pack</th>
+<th>分數</th>
+<th>10y Sharpe</th>
+<th>10y DD%</th>
+<th>S5 策略%</th>
+<th>S5 Sharpe</th>
+<th>S4 策略%</th>
+<th>S4 Sharpe</th>
+</tr></thead><tbody>
+<tr>
+<td>1</td>
+<td><a href="../stock_pages/2383.html" style="color:#58a6ff;font-weight:600">2383</a></td>
+<td>台光電</td>
+<td>電子零組件業</td>
+<td><span class="tag">A 趨勢嚴格</span></td>
+<td data-sort="141.05"><b>141.05</b></td>
+<td class="pos" data-sort="1.205">1.21</td>
+<td class="neg" data-sort="19.0">19.0%</td>
+<td class="pos" data-sort="241.02">+241.0%</td>
+<td class="pos" data-sort="2.27">2.27</td>
+<td class="pos" data-sort="26.09">+26.1%</td>
+<td class="pos" data-sort="0.908">0.91</td>
+</tr>
+<tr>
+<td>2</td>
+<td><a href="../stock_pages/2404.html" style="color:#58a6ff;font-weight:600">2404</a></td>
+<td>漢唐</td>
+<td>其他電子業</td>
+<td><span class="tag">C 趨勢+大盤filter</span></td>
+<td data-sort="124.11"><b>124.11</b></td>
+<td class="pos" data-sort="1.143">1.14</td>
+<td class="neg" data-sort="27.29">27.3%</td>
+<td class="pos" data-sort="219.3">+219.3%</td>
+<td class="pos" data-sort="2.05">2.05</td>
+<td class="pos" data-sort="5.01">+5.0%</td>
+<td class="pos" data-sort="0.342">0.34</td>
+</tr>
+<tr>
+<td>3</td>
+<td><a href="../stock_pages/5234.html" style="color:#58a6ff;font-weight:600">5234</a></td>
+<td>達興材料</td>
+<td>光電業</td>
+<td><span class="tag">B 趨勢早入</span></td>
+<td data-sort="96.66"><b>96.66</b></td>
+<td class="pos" data-sort="1.013">1.01</td>
+<td class="neg" data-sort="27.37">27.4%</td>
+<td class="pos" data-sort="138.18">+138.2%</td>
+<td class="pos" data-sort="1.405">1.41</td>
+<td class="pos" data-sort="46.36">+46.4%</td>
+<td class="pos" data-sort="1.399">1.40</td>
+</tr>
+<tr>
+<td>4</td>
+<td><a href="../stock_pages/8021.html" style="color:#58a6ff;font-weight:600">8021</a></td>
+<td>尖點</td>
+<td>電子工業</td>
+<td><span class="tag">F RSI 超賣</span></td>
+<td data-sort="95.09"><b>95.09</b></td>
+<td class="pos" data-sort="1.073">1.07</td>
+<td class="neg" data-sort="21.85">21.9%</td>
+<td class="pos" data-sort="148.0">+148.0%</td>
+<td class="pos" data-sort="1.653">1.65</td>
+<td class="pos" data-sort="3.12">+3.1%</td>
+<td class="pos" data-sort="0.334">0.33</td>
+</tr>
+<tr>
+<td>5</td>
+<td><a href="../stock_pages/2467.html" style="color:#58a6ff;font-weight:600">2467</a></td>
+<td>志聖</td>
+<td>電子零組件業</td>
+<td><span class="tag">A 趨勢嚴格</span></td>
+<td data-sort="84.59"><b>84.59</b></td>
+<td class="pos" data-sort="1.176">1.18</td>
+<td class="neg" data-sort="27.52">27.5%</td>
+<td class="pos" data-sort="120.93">+120.9%</td>
+<td class="pos" data-sort="1.373">1.37</td>
+<td class="pos" data-sort="0.38">+0.4%</td>
+<td class="pos" data-sort="0.099">0.10</td>
+</tr>
+<tr>
+<td>6</td>
+<td><a href="../stock_pages/6691.html" style="color:#58a6ff;font-weight:600">6691</a></td>
+<td>洋基工程</td>
+<td>電子工業</td>
+<td><span class="tag">C 趨勢+大盤filter</span></td>
+<td data-sort="81.57"><b>81.57</b></td>
+<td class="pos" data-sort="1.601">1.60</td>
+<td class="neg" data-sort="28.29">28.3%</td>
+<td class="pos" data-sort="45.41">+45.4%</td>
+<td class="pos" data-sort="0.959">0.96</td>
+<td class="pos" data-sort="84.35">+84.3%</td>
+<td class="pos" data-sort="2.309">2.31</td>
+</tr>
+<tr>
+<td>7</td>
+<td><a href="../stock_pages/8101.html" style="color:#58a6ff;font-weight:600">8101</a></td>
+<td>華冠</td>
+<td>電子工業</td>
+<td><span class="tag">A 趨勢嚴格</span></td>
+<td data-sort="80.86"><b>80.86</b></td>
+<td class="pos" data-sort="0.874">0.87</td>
+<td class="neg" data-sort="25.5">25.5%</td>
+<td class="pos" data-sort="129.14">+129.1%</td>
+<td class="pos" data-sort="1.84">1.84</td>
+<td class="mute" data-sort="0.0">+0.0%</td>
+<td class="pos" data-sort="inf">inf</td>
+</tr>
+<tr>
+<td>8</td>
+<td><a href="../stock_pages/3447.html" style="color:#58a6ff;font-weight:600">3447</a></td>
+<td>展達</td>
+<td>電子工業</td>
+<td><span class="tag">A 趨勢嚴格</span></td>
+<td data-sort="65.07"><b>65.07</b></td>
+<td class="pos" data-sort="0.868">0.87</td>
+<td class="neg" data-sort="24.65">24.6%</td>
+<td class="pos" data-sort="89.39">+89.4%</td>
+<td class="pos" data-sort="1.265">1.26</td>
+<td class="pos" data-sort="0.03">+0.0%</td>
+<td class="pos" data-sort="0.095">0.10</td>
+</tr>
+<tr>
+<td>9</td>
+<td><a href="../stock_pages/2460.html" style="color:#58a6ff;font-weight:600">2460</a></td>
+<td>建通</td>
+<td>電子零組件業</td>
+<td><span class="tag">D 純 KD/RSI</span></td>
+<td data-sort="57.49"><b>57.49</b></td>
+<td class="pos" data-sort="1.012">1.01</td>
+<td class="neg" data-sort="23.78">23.8%</td>
+<td class="pos" data-sort="58.42">+58.4%</td>
+<td class="pos" data-sort="1.135">1.14</td>
+<td class="pos" data-sort="4.8">+4.8%</td>
+<td class="pos" data-sort="0.276">0.28</td>
+</tr>
+<tr>
+<td>10</td>
+<td><a href="../stock_pages/3018.html" style="color:#58a6ff;font-weight:600">3018</a></td>
+<td>隆銘綠能</td>
+<td>其他電子業</td>
+<td><span class="tag">A 趨勢嚴格</span></td>
+<td data-sort="54.28"><b>54.28</b></td>
+<td class="pos" data-sort="1.038">1.04</td>
+<td class="neg" data-sort="25.82">25.8%</td>
+<td class="pos" data-sort="34.7">+34.7%</td>
+<td class="pos" data-sort="0.878">0.88</td>
+<td class="pos" data-sort="35.96">+36.0%</td>
+<td class="pos" data-sort="1.188">1.19</td>
+</tr>
+<tr>
+<td>11</td>
+<td><a href="../stock_pages/3028.html" style="color:#58a6ff;font-weight:600">3028</a></td>
+<td>增你強</td>
+<td>電子通路業</td>
+<td><span class="tag">F RSI 超賣</span></td>
+<td data-sort="46.51"><b>46.51</b></td>
+<td class="pos" data-sort="0.894">0.89</td>
+<td class="neg" data-sort="17.54">17.5%</td>
+<td class="pos" data-sort="33.26">+33.3%</td>
+<td class="pos" data-sort="1.741">1.74</td>
+<td class="pos" data-sort="5.59">+5.6%</td>
+<td class="pos" data-sort="0.895">0.90</td>
+</tr>
+</tbody></table>
+</body></html>
